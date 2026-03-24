@@ -12,7 +12,7 @@ app = Flask(__name__,
             template_folder=os.path.join(base_dir, 'templates'),
             static_folder=os.path.join(base_dir, 'static'))
 
-# Database Setup - Render par safe file banane ke liye
+# Database Setup
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(base_dir, 'billing.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -24,6 +24,10 @@ class Client(db.Model):
     gstin = db.Column(db.String(15))
     email = db.Column(db.String(100))
 
+# --- ISSE DATABASE TABLE BAN JAYEGI ---
+with app.app_context():
+    db.create_all()
+
 # 2. Home Page (Dashboard)
 @app.route('/')
 def index():
@@ -31,7 +35,8 @@ def index():
         all_clients = Client.query.all()
         return render_template('index.html', clients=all_clients)
     except Exception as e:
-        return f"Database Error: {str(e)}"
+        # Agar table nahi milti toh ye error dikhayega
+        return f"Database Error: {str(e)}. Please refresh or wait a minute."
 
 # 3. Naya Client Add Karne Ka Route
 @app.route('/add-client', methods=['POST'])
@@ -67,12 +72,14 @@ def generate_pdf(client_id):
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer)
     
+    # Header
     p.setFont("Helvetica-Bold", 20)
     p.drawCentredString(300, 800, "CA DEEPAK BHAYANA")
     p.setFont("Helvetica", 12)
     p.drawCentredString(300, 780, "Chartered Accountants | Tax Consultant")
     p.line(50, 765, 550, 765)
 
+    # Info
     p.setFont("Helvetica-Bold", 12)
     p.drawString(50, 740, f"INVOICE TO:")
     p.setFont("Helvetica", 12)
@@ -80,6 +87,7 @@ def generate_pdf(client_id):
     p.drawString(50, 710, f"GSTIN: {client.gstin if client.gstin else 'N/A'}")
     p.drawString(400, 725, f"Date: {datetime.now().strftime('%d-%m-%Y')}")
 
+    # Bill Body
     p.line(50, 680, 550, 680)
     p.drawString(60, 665, "Description of Service")
     p.drawString(450, 665, "Amount (Rs.)")
@@ -109,6 +117,4 @@ def generate_pdf(client_id):
     return send_file(buffer, as_attachment=True, download_name=f"Invoice_{client.name}.pdf", mimetype='application/pdf')
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
