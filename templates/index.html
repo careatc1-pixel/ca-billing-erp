@@ -1,80 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CA Deepak Bhayana | Billing ERP</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+<div class="card p-4 mb-4 shadow-sm">
+    <h5>Add New Client</h5>
+    <form action="/add-client" method="POST" class="row g-3">
+        <div class="col-md-4"><input type="text" name="name" class="form-control" placeholder="Client Name" required></div>
+        <div class="col-md-4"><input type="text" name="gstin" class="form-control" placeholder="GSTIN (Optional)"></div>
+        <div class="col-md-4"><input type="email" name="email" class="form-control" placeholder="Email Address"></div>
+        <div class="col-md-4"><input type="text" name="contact" class="form-control" placeholder="Contact No"></div>
+        <div class="col-md-8"><input type="text" name="address" class="form-control" placeholder="Full Address"></div>
+        <div class="col-12"><button class="btn btn-success">Save Client</button></div>
+    </form>
 
-    <nav class="navbar navbar-dark bg-primary shadow">
-        <div class="container">
-            <a class="navbar-brand" href="#">CA Deepak Bhayana - Billing ERP</a>
-        </div>
-    </nav>
+    <hr class="my-4">
 
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-body text-center">
-                        <h3>Quick Action</h3>
-                        <button class="btn btn-success w-100 mb-2" data-bs-toggle="modal" data-bs-target="#addClientModal">Add New Client</button>
-                        <a href="/invoices" class="btn btn-outline-primary w-100">View All Bills</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-8">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white"><strong>Client Directory</strong></div>
-                    <div class="card-body">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>GSTIN</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for client in clients %}
-                                <tr>
-                                    <td>{{ client.name }}</td>
-                                    <td>{{ client.gstin }}</td>
-                                    <td>
-                                        <a href="/create-bill/{{ client.id }}" class="btn btn-sm btn-primary text-white">Generate Bill</a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="addClientModal" tabindex="-1">
-        <div class="modal-dialog">
-            <form action="/add-client" method="POST" class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">New Client Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" name="name" class="form-control mb-2" placeholder="Client Name" required>
-                    <input type="text" name="gstin" class="form-control mb-2" placeholder="GSTIN (Optional)">
-                    <input type="email" name="email" class="form-control mb-2" placeholder="Email Address">
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Save Client</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+    <h5>Bulk Import (Excel/CSV)</h5>
+    <form action="/upload-excel" method="POST" enctype="multipart/form-data" class="row g-3">
+        <div class="col-md-8"><input type="file" name="file" class="form-control" accept=".xlsx, .csv" required></div>
+        <div class="col-md-4"><button class="btn btn-primary w-100">Upload Excel</button></div>
+        <p class="small text-muted">Note: Excel columns should be: <b>Name, GST, Email, Contact, Address</b></p>
+    </form>
+</div>
