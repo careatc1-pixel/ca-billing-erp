@@ -1,10 +1,30 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <div class="container mt-5">
-    <h3>Change Login ID/Password</h3>
-    <form method="POST" class="card p-4 shadow">
-        <input type="text" name="new_username" class="form-control mb-3" placeholder="New Login ID">
-        <input type="password" name="new_password" class="form-control mb-3" placeholder="New Password">
-        <button class="btn btn-warning">Update Credentials</button>
-        <a href="/" class="btn btn-secondary mt-2">Back</a>
-    </form>
+    <div class="card p-4 shadow mx-auto" style="max-width: 500px;">
+        <h3>Security Settings</h3>
+        <hr>
+        <form method="POST">
+            {% if not otp_sent %}
+                <p class="text-muted">Click below to send OTP to registered email to change settings.</p>
+                <input type="hidden" name="action" value="send_otp">
+                <button class="btn btn-primary w-100">Send OTP to Email</button>
+            {% else %}
+                <input type="hidden" name="action" value="verify_otp">
+                <div class="mb-3">
+                    <label>Enter 6-Digit OTP</label>
+                    <input type="text" name="otp" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label>New Username (Optional)</label>
+                    <input type="text" name="new_user" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label>New Password (Optional)</label>
+                    <input type="password" name="new_pass" class="form-control">
+                </div>
+                <button class="btn btn-success w-100">Verify & Update</button>
+            {% endif %}
+        </form>
+        <a href="/" class="btn btn-link mt-3">Cancel</a>
+    </div>
 </div>
