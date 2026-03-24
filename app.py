@@ -1,13 +1,13 @@
-import os
-from flask import Flask, render_template, request, redirect, url_for, send_file, session, flash
+import os, io, random, smtplib
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from reportlab.pdfgen import canvas
 from datetime import datetime
-import io
+from email.message import EmailMessage
 
 app = Flask(__name__)
-app.secret_key = "CA_Deepak_Secret_Key_123" # Session secure rakhne ke liye
+app.secret_key = "CA_Deepak_Secure_786"
 
 # DATABASE CONNECTION
 db_url = os.environ.get('DATABASE_URL')
@@ -18,31 +18,41 @@ app.config['SQLALCHEMY_DATABASE_URI'] = db_url or 'sqlite:///billing.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# 1. Admin Table (Login ke liye)
+# --- MODELS ---
 class Admin(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
 
-# 2. Client Table
 class Client(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     gstin = db.Column(db.String(15))
     email = db.Column(db.String(100))
 
-# Table banana aur default login create karna
 with app.app_context():
     db.create_all()
-    # Agar koi admin nahi hai, toh default login banayein
     if not Admin.query.filter_by(username="admin").first():
-        hashed_pw = generate_password_hash("admin123", method='pbkdf2:sha256')
-        new_admin = Admin(username="admin", password=hashed_pw)
-        db.session.add(new_admin)
+        db.session.add(Admin(username="admin", password=generate_password_hash("admin123")))
         db.session.commit()
 
-# --- ROUTES ---
+# --- OTP HELPER ---
+def send_otp_email(otp):
+    msg = EmailMessage()
+    msg.set_content(f"Your OTP for CA Deepak Bhayana ERP Settings is: {otp}")
+    msg['Subject'] = 'ERP Security OTP'
+    msg['From'] = os.environ.get('EMAIL_USER')
+    msg['To'] = 'cadeepakbhayana1@gmail.com'
 
+    try:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(os.environ.get('EMAIL_USER'), os.environ.get('EMAIL_PASS'))
+            smtp.send_message(msg)
+        return True
+    except:
+        return False
+
+# --- ROUTES ---
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -50,75 +60,50 @@ def login():
         if user and check_password_hash(user.password, request.form.get('password')):
             session['logged_in'] = True
             return redirect(url_for('index'))
-        flash("Invalid ID or Password!")
+        flash("Invalid Credentials")
     return render_template('login.html')
-
-@app.route('/logout')
-def logout():
-    session.pop('logged_in', None)
-    return redirect(url_for('login'))
 
 @app.route('/')
 def index():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
-    all_clients = Client.query.all()
-    return render_template('index.html', clients=all_clients)
+    if not session.get('logged_in'): return redirect(url_for('login'))
+    return render_template('index.html', clients=Client.query.all())
 
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
+    if not session.get('logged_in'): return redirect(url_for('login'))
     
     if request.method == 'POST':
-        new_user = request.form.get('new_username')
-        new_pass = request.form.get('new_password')
-        admin = Admin.query.first()
-        if new_user: admin.username = new_user
-        if new_pass: admin.password = generate_password_hash(new_pass, method='pbkdf2:sha256')
-        db.session.commit()
-        flash("Login ID/Password Updated Successfully!")
-        return redirect(url_for('index'))
-    
-    return render_template('settings.html')
+        action = request.form.get('action')
+        
+        if action == 'send_otp':
+            otp = str(random.randint(100000, 999999))
+            session['temp_otp'] = otp
+            if send_otp_email(otp):
+                flash("OTP sent to cadeepakbhayana1@gmail.com")
+                return render_template('settings.html', otp_sent=True)
+            else:
+                flash("Error sending email. Check App Password.")
+        
+        elif action == 'verify_otp':
+            user_otp = request.form.get('otp')
+            if user_otp == session.get('temp_otp'):
+                admin = Admin.query.first()
+                if request.form.get('new_user'): admin.username = request.form.get('new_user')
+                if request.form.get('new_pass'): admin.password = generate_password_hash(request.form.get('new_pass'))
+                db.session.commit()
+                session.pop('temp_otp', None)
+                flash("Credentials Updated!")
+                return redirect(url_for('index'))
+            flash("Invalid OTP!")
+            
+    return render_template('settings.html', otp_sent=False)
 
-@app.route('/add-client', methods=['POST'])
-def add_client():
-    if not session.get('logged_in'): return redirect(url_for('login'))
-    name = request.form.get('name')
-    if name:
-        new_client = Client(name=name, gstin=request.form.get('gstin'), email=request.form.get('email'))
-        db.session.add(new_client)
-        db.session.commit()
-    return redirect(url_for('index'))
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
-@app.route('/create-bill/<int:client_id>')
-def create_bill(client_id):
-    if not session.get('logged_in'): return redirect(url_for('login'))
-    client = Client.query.get(client_id)
-    return render_template('create_bill.html', client=client)
-
-@app.route('/generate-pdf/<int:client_id>', methods=['POST'])
-def generate_pdf(client_id):
-    if not session.get('logged_in'): return redirect(url_for('login'))
-    # (Purana PDF generation code yahan rahega)
-    client = Client.query.get(client_id)
-    service = request.form.get('service')
-    amount = float(request.form.get('amount') or 0)
-    gst_rate = float(request.form.get('gst_rate', 18))
-    gst_amount = (amount * gst_rate) / 100
-    total = amount + gst_amount
-    buffer = io.BytesIO()
-    p = canvas.Canvas(buffer)
-    p.setFont("Helvetica-Bold", 20)
-    p.drawCentredString(300, 800, "CA DEEPAK BHAYANA")
-    p.setFont("Helvetica", 10)
-    p.drawString(50, 740, f"Client: {client.name}")
-    p.drawString(50, 720, f"Total: Rs. {total:.2f}")
-    p.showPage()
-    p.save()
-    buffer.seek(0)
-    return send_file(buffer, as_attachment=True, download_name=f"Invoice_{client.name}.pdf", mimetype='application/pdf')
+# (Yahan client add aur pdf generation routes purane wale paste kar dein)
 
 if __name__ == '__main__':
     app.run(debug=True)
