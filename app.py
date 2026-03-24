@@ -1,13 +1,19 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for, send_file
 from flask_sqlalchemy import SQLAlchemy
 from reportlab.pdfgen import canvas
 from datetime import datetime
 import io
 
-app = Flask(__name__)
+# Render ke liye path settings
+base_dir = os.path.abspath(os.path.dirname(__file__))
 
-# Database Setup
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///billing.db'
+app = Flask(__name__, 
+            template_folder=os.path.join(base_dir, 'templates'),
+            static_folder=os.path.join(base_dir, 'static'))
+
+# Database Setup - Render par safe file banane ke liye
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(base_dir, 'billing.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -18,11 +24,14 @@ class Client(db.Model):
     gstin = db.Column(db.String(15))
     email = db.Column(db.String(100))
 
-# 2. Home Page (Dashboard) - Saare clients dikhayega
+# 2. Home Page (Dashboard)
 @app.route('/')
 def index():
-    all_clients = Client.query.all()
-    return render_template('index.html', clients=all_clients)
+    try:
+        all_clients = Client.query.all()
+        return render_template('index.html', clients=all_clients)
+    except Exception as e:
+        return f"Database Error: {str(e)}"
 
 # 3. Naya Client Add Karne Ka Route
 @app.route('/add-client', methods=['POST'])
@@ -43,30 +52,27 @@ def create_bill(client_id):
     client = Client.query.get(client_id)
     return render_template('create_bill.html', client=client)
 
-# 5. PDF Generate Karke Download Karwane Ka Route
+# 5. PDF Generate Ka Route
 @app.route('/generate-pdf/<int:client_id>', methods=['POST'])
 def generate_pdf(client_id):
     client = Client.query.get(client_id)
     service = request.form.get('service')
-    amount = float(request.form.get('amount'))
-    gst_rate = float(request.form.get('gst_rate'))
+    amount_str = request.form.get('amount')
+    amount = float(amount_str) if amount_str else 0.0
+    gst_rate = float(request.form.get('gst_rate', 18))
 
-    # GST Calculation
     gst_amount = (amount * gst_rate) / 100
     total = amount + gst_amount
 
-    # PDF Logic
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer)
     
-    # Header - CA Deepak Bhayana Details
     p.setFont("Helvetica-Bold", 20)
     p.drawCentredString(300, 800, "CA DEEPAK BHAYANA")
     p.setFont("Helvetica", 12)
     p.drawCentredString(300, 780, "Chartered Accountants | Tax Consultant")
     p.line(50, 765, 550, 765)
 
-    # Invoice Info
     p.setFont("Helvetica-Bold", 12)
     p.drawString(50, 740, f"INVOICE TO:")
     p.setFont("Helvetica", 12)
@@ -74,29 +80,23 @@ def generate_pdf(client_id):
     p.drawString(50, 710, f"GSTIN: {client.gstin if client.gstin else 'N/A'}")
     p.drawString(400, 725, f"Date: {datetime.now().strftime('%d-%m-%Y')}")
 
-    # Table Header
     p.line(50, 680, 550, 680)
     p.drawString(60, 665, "Description of Service")
     p.drawString(450, 665, "Amount (Rs.)")
     p.line(50, 660, 550, 660)
 
-    # Service Detail
     p.drawString(60, 640, service)
     p.drawRightString(540, 640, f"{amount:.2f}")
 
-    # Totals
     p.line(350, 600, 550, 600)
     p.drawString(360, 580, f"Taxable Value:")
     p.drawRightString(540, 580, f"{amount:.2f}")
-    
     p.drawString(360, 560, f"GST ({gst_rate}%):")
     p.drawRightString(540, 560, f"{gst_amount:.2f}")
-
     p.setFont("Helvetica-Bold", 14)
     p.drawString(360, 530, "NET PAYABLE:")
     p.drawRightString(540, 530, f"{total:.2f}")
 
-    # Footer
     p.setFont("Helvetica-Oblique", 10)
     p.drawString(50, 100, "Note: This is a computer-generated invoice.")
     p.drawRightString(550, 100, "For CA DEEPAK BHAYANA")
