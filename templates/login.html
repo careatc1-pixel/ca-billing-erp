@@ -3,67 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CA Deepak Bhayana | Secure ERP Login</title>
+    <title>CA Deepak Bhayana | Secure ERP Access</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .login-card { border-radius: 20px; overflow: hidden; background: white; max-width: 900px; width: 100%; border: none; }
-        .info-side { background: #002d5b; color: white; padding: 50px; }
+        body { background: linear-gradient(135deg, #0d1b33 0%, #1e3c72 100%); height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Poppins', sans-serif; }
+        .login-card { border-radius: 20px; overflow: hidden; background: white; max-width: 950px; width: 100%; border: none; }
+        .info-side { background: #00234a; color: white; padding: 50px; position: relative; }
         .form-side { padding: 50px; }
-        .firm-title { border-bottom: 2px solid #ffc107; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; }
-        .detail-item { margin-bottom: 15px; font-size: 0.95rem; display: flex; align-items: center; }
-        .detail-item i { margin-right: 15px; color: #ffc107; font-size: 1.2rem; }
-        .login-btn { background: #002d5b; border: none; padding: 12px; font-weight: 600; transition: 0.3s; }
-        .login-btn:hover { background: #004085; transform: translateY(-2px); }
+        
+        /* Premium Stylish Font Style for Name */
+        .premium-name { 
+            font-family: 'Playfair Display', serif; 
+            font-size: 2.4rem; 
+            font-weight: 700; 
+            letter-spacing: 0.5px; 
+            color: #fff;
+            white-space: nowrap; 
+            display: inline-block;
+            border-bottom: 3px solid #ffc107;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+
+        .firm-subtitle { color: #ffc107; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 30px; display: block; }
+        .detail-item { margin-bottom: 18px; font-size: 0.95rem; display: flex; align-items: start; line-height: 1.5; }
+        .detail-item i { margin-right: 15px; color: #ffc107; font-size: 1.1rem; margin-top: 4px;}
+        .login-btn { background: #00234a; border: none; padding: 12px; font-weight: 600; transition: 0.3s; letter-spacing: 1px; }
+        .login-btn:hover { background: #003673; transform: translateY(-1px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .form-control:focus { border-color: #00234a; box-shadow: 0 0 0 0.2rem rgba(0, 35, 74, 0.25); }
+        .since-text { position: absolute; bottom: 30px; left: 50px; font-style: italic; opacity: 0.7; font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
-<div class="container d-flex justify-content-center">
-    <div class="row login-card shadow-2xl">
+<div class="container">
+    <div class="row login-card shadow-2xl mx-1">
         
         <div class="col-md-6 info-side d-none d-md-flex flex-column justify-content-center">
-            <h1 class="firm-title">CA DEEPAK BHAYANA</h1>
-            <h5 class="mb-4 text-warning">Chartered Accountants</h5>
+            <div class="mb-1">
+                <span class="premium-name">CA DEEPAK BHAYANA</span>
+            </div>
+            <span class="firm-subtitle fw-bold">Chartered Accountants</span>
             
             <div class="firm-details mt-2">
                 <div class="detail-item">
                     <i class="fas fa-university"></i>
-                    <span><strong>ICAI Reg No:</strong> 0XXXXXN (M.No. XXXXXX)</span>
-                </div>
-                <div class="detail-item">
-                    <i class="fas fa-file-invoice-dollar"></i>
-                    <span><strong>Specialization:</strong> Audit, Taxation & GST Compliance</span>
+                    <span><strong>ICAI Registered Firm</strong><br>Expertise in Audit & Taxation</span>
                 </div>
                 <div class="detail-item">
                     <i class="fas fa-map-marker-alt"></i>
-                    <span><strong>Head Office:</strong> Sector-XX, Near Main Market, <br>New Delhi - 1100XX</span>
+                    <span><strong>Head Office:</strong><br>Paschim Vihar West Metro, Near CA Apartment, Jawalheri, New Delhi - 110063</span>
                 </div>
                 <div class="detail-item">
                     <i class="fas fa-phone-alt"></i>
-                    <span><strong>Contact:</strong> +91 98XXX XXXXX, +91 11 2XXX XXXX</span>
+                    <span><strong>Contact No:</strong><br>+91 99100 89501</span>
                 </div>
                 <div class="detail-item">
                     <i class="fas fa-envelope"></i>
-                    <span><strong>Email:</strong> cadeepakbhayana1@gmail.com</span>
+                    <span><strong>Email Address:</strong><br>cadeepakbhayana1@gmail.com</span>
                 </div>
             </div>
             
-            <p class="mt-4 small text-light opacity-75">Serving excellence in financial consultancy since 20XX.</p>
+            <div class="since-text">
+                <i class="fas fa-award me-1 text-warning"></i> Serving excellence since 2014
+            </div>
         </div>
 
         <div class="col-md-6 form-side">
             <div class="text-center mb-5">
                 <h3 class="fw-bold text-dark">ERP Portal</h3>
-                <p class="text-muted">Secure Access for Authorized Personnel Only</p>
+                <p class="text-muted small">Secure Access for Authorized Personnel Only</p>
             </div>
 
             {% with messages = get_flashed_messages() %}
               {% if messages %}
                 {% for message in messages %}
-                  <div class="alert alert-danger alert-dismissible fade show p-2 small" role="alert">
-                    {{ message }}
+                  <div class="alert alert-danger alert-dismissible fade show p-2 mb-4" style="font-size: 0.85rem;" role="alert">
+                    <i class="fas fa-exclamation-circle me-1"></i> {{ message }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                   </div>
                 {% endfor %}
@@ -72,22 +90,22 @@
 
             <form method="POST">
                 <div class="mb-4">
-                    <label class="form-label fw-semibold text-secondary">Admin Username</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-user text-muted"></i></span>
-                        <input type="text" name="username" class="form-control bg-light border-start-0" placeholder="e.g. admin" required>
+                    <label class="form-label fw-semibold text-secondary small">Username / Admin ID</label>
+                    <div class="input-group border rounded shadow-sm">
+                        <span class="input-group-text bg-white border-0"><i class="fas fa-user text-muted"></i></span>
+                        <input type="text" name="username" class="form-control border-0" placeholder="Enter Username" required>
                     </div>
                 </div>
                 <div class="mb-4">
-                    <label class="form-label fw-semibold text-secondary">Security Password</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-lock text-muted"></i></span>
-                        <input type="password" name="password" class="form-control bg-light border-start-0" placeholder="••••••••" required>
+                    <label class="form-label fw-semibold text-secondary small">Secure Password</label>
+                    <div class="input-group border rounded shadow-sm">
+                        <span class="input-group-text bg-white border-0"><i class="fas fa-lock text-muted"></i></span>
+                        <input type="password" name="password" class="form-control border-0" placeholder="••••••••" required>
                     </div>
                 </div>
                 
-                <button type="submit" class="btn btn-primary login-btn w-100 shadow-sm mt-2">
-                    AUTHENTICATE & LOGIN
+                <button type="submit" class="btn btn-primary login-btn w-100 shadow-sm mt-2 text-uppercase">
+                    Authenticate & Login
                 </button>
             </form>
 
