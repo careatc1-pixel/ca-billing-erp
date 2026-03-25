@@ -9,16 +9,18 @@ from email.message import EmailMessage
 app = Flask(__name__)
 app.secret_key = "CA_Deepak_Secure_99100"
 
-# --- DATABASE CONNECTION ---
+# --- DATABASE CONNECTION SETUP ---
 db_url = os.environ.get('DATABASE_URL')
 if db_url and db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url or 'sqlite:///billing.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# PEHLE db define hona chahiye (Isi line ki wajah se error tha)
 db = SQLAlchemy(app)
 
-# --- MODELS ---
+# --- MODELS (db define hone ke BAAD aayenge) ---
 class Admin(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
@@ -32,6 +34,7 @@ class Client(db.Model):
     contact = db.Column(db.String(20))
     address = db.Column(db.Text)
 
+# Tables Banana
 with app.app_context():
     db.create_all()
     if not Admin.query.filter_by(username="admin").first():
@@ -47,7 +50,7 @@ def login():
         if user and check_password_hash(user.password, request.form.get('password')):
             session['logged_in'] = True
             return redirect(url_for('index'))
-        flash("Invalid Credentials! Please try again.")
+        flash("Invalid Credentials!")
     return render_template('login.html')
 
 @app.route('/')
@@ -68,7 +71,7 @@ def add_client():
     )
     db.session.add(new_client)
     db.session.commit()
-    flash("Client Added Successfully!")
+    flash("Client Added!")
     return redirect(url_for('index'))
 
 @app.route('/upload-excel', methods=['POST'])
@@ -80,9 +83,8 @@ def upload_excel():
             wb = openpyxl.load_workbook(file)
             sheet = wb.active
             count = 0
-            # Reading from Row 2 (Skipping Headers)
             for row in sheet.iter_rows(min_row=2, values_only=True):
-                if row[0]: # If Name exists
+                if row[0]: 
                     client = Client(
                         name=str(row[0]),
                         gstin=str(row[1]) if row[1] else "",
@@ -93,11 +95,9 @@ def upload_excel():
                     db.session.add(client)
                     count += 1
             db.session.commit()
-            flash(f"Success! {count} clients imported from Excel.")
+            flash(f"Success! {count} clients imported.")
         except Exception as e:
-            flash(f"Error reading Excel: {str(e)}")
-    else:
-        flash("Please upload a valid .xlsx file")
+            flash(f"Error: {str(e)}")
     return redirect(url_for('index'))
 
 @app.route('/create-bill/<int:client_id>')
@@ -113,24 +113,20 @@ def generate_pdf(client_id):
     service = request.form.get('service')
     amount = float(request.form.get('amount') or 0)
     gst_rate = float(request.form.get('gst_rate', 18))
-    
     gst_amount = (amount * gst_rate) / 100
     total = amount + gst_amount
 
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer)
-    # Header
     p.setFont("Helvetica-Bold", 20)
     p.drawCentredString(300, 800, "CA DEEPAK BHAYANA")
     p.setFont("Helvetica", 10)
     p.drawCentredString(300, 785, "Chartered Accountants | Paschim Vihar, Delhi")
     p.line(50, 770, 550, 770)
     
-    # Body
     p.setFont("Helvetica-Bold", 12)
     p.drawString(50, 740, f"INVOICE TO: {client.name}")
     p.setFont("Helvetica", 10)
-    p.drawString(50, 725, f"Address: {client.address[:60] if client.address else 'N/A'}")
     p.drawString(400, 740, f"Date: {datetime.now().strftime('%d-%m-%Y')}")
     
     p.line(50, 700, 550, 700)
